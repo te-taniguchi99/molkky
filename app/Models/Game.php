@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -64,6 +65,16 @@ class Game extends Model
             ->withPivot('throw_order')
             ->withTimestamps()
             ->orderByPivot('throw_order');
+    }
+
+    /**
+     * この試合の投擲の記録(投げた順)。
+     *
+     * @return HasMany<GameThrow, $this>
+     */
+    public function throws(): HasMany
+    {
+        return $this->hasMany(GameThrow::class)->orderBy('id');
     }
 
     /**

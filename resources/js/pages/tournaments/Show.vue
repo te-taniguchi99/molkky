@@ -108,6 +108,16 @@ defineOptions({
             <dd>{{ tournament.status }}</dd>
         </dl>
 
+        <!-- 編集・順位表 -->
+        <div class="flex flex-col gap-2 sm:flex-row">
+            <Button as-child variant="outline" class="flex-1">
+                <Link :href="`/tournaments/${tournament.id}/edit`">大会の情報を編集する</Link>
+            </Button>
+            <Button v-if="!tournament.is_preparing" as-child variant="outline" class="flex-1">
+                <Link :href="`/standings/${tournament.id}`">順位表を見る</Link>
+            </Button>
+        </div>
+
         <!-- 参加者 -->
         <section class="flex flex-col gap-4">
             <h2 class="text-lg font-semibold">
@@ -228,11 +238,17 @@ defineOptions({
                 <li
                     v-for="game in games"
                     :key="game.id"
-                    class="rounded-xl border border-sidebar-border/70 p-3 dark:border-sidebar-border"
+                    class="rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
                 >
-                    <p class="text-sm text-muted-foreground">{{ game.round }}回戦 / {{ game.status }}</p>
-                    <p v-if="game.is_bye">{{ game.participants[0] }}(不戦勝)</p>
-                    <p v-else>{{ game.participants.join(' vs ') }}</p>
+                    <!-- 不戦勝は、入力する点数がないため、移動先なし -->
+                    <div v-if="game.is_bye" class="p-3">
+                        <p class="text-sm text-muted-foreground">{{ game.round }}回戦 / {{ game.status }}</p>
+                        <p>{{ game.participants[0] }}(不戦勝)</p>
+                    </div>
+                    <Link v-else :href="`/games/${game.id}`" class="block p-3 transition-colors hover:bg-accent">
+                        <p class="text-sm text-muted-foreground">{{ game.round }}回戦 / {{ game.status }}</p>
+                        <p>{{ game.participants.join(' vs ') }}</p>
+                    </Link>
                 </li>
             </ul>
         </section>
