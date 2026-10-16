@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Tournaments\StartTournament;
 use App\Enums\ParticipantType;
 use App\Enums\TournamentFormat;
+use App\Enums\TournamentStatus;
 use App\Http\Requests\StoreTournamentRequest;
+use App\Models\Game;
+use App\Models\Participant;
 use App\Models\Tournament;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -66,5 +70,73 @@ class TournamentController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => '大会を作成しました。']);
 
         return to_route('tournaments.index');
+    }
+
+    /**
+     * 大会の詳細(参加者の登録、試合の一覧)を表示する。
+     */
+    public function show(Tournament $tournament): Response
+    {
+        $participants = $tournament->participants()
+            ->orderBy('id')
+            ->get()
+            ->map(fn (Participant $participant) => [
+                'id' => $participant->id,
+                'name' => $participant->name,
+                'member_count' => $participant->member_count,
+            ]);
+
+        // 試合は、回戦・並び順の順に、出る参加者の名前といっしょに渡す
+        $games = $tournament->games()
+            ->with('participants')
+            ->orderBy('round')
+            ->orderBy('position')
+            ->get()
+            ->map(fn (Game $game) => [
+                'id' => $game->id,
+                'round' => $game->round,
+                'status' => $game->status->label(),
+                'is_bye' => $game->is_bye,
+                'participants' => $game->participants->pluck('name')->all(),
+            ]);
+
+        return Inertia::render('tournaments/Show', [
+            'tournament' => [
+                'id' => $tournament->id,
+                'name' => $tournament->name,
+                'format' => $tournament->format->label(),
+                'participant_type' => $tournament->participant_type->label(),
+                'is_team' => $tournament->participant_type === ParticipantType::Team,
+                'team_size' => $tournament->team_size,
+                'status' => $tournament->status->label(),
+                'is_preparing' => $tournament->status === TournamentStatus::Preparing,
+            ],
+            'participants' => $participants,
+            'games' => $games,
+        ]);
+    }
+
+    /**
+     * 大会を開始して、試合を自動で作る。
+     */
+    public function start(Tournament $tournament, StartTournament $startTournament): RedirectResponse
+    {
+        if ($tournament->status !== TournamentStatus::Preparing) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'この大会は、すでに開始しています。']);
+
+            return to_route('tournaments.show', $tournament);
+        }
+
+        if ($tournament->participants()->count() < 2) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => '参加者が2つ以上必要です。']);
+
+            return to_route('tournaments.show', $tournament);
+        }
+
+        $startTournament($tournament);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => '大会を開始しました。試合を作成しました。']);
+
+        return to_route('tournaments.show', $tournament);
     }
 }

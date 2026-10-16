@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -12,7 +13,12 @@ Route::middleware(['auth'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');
 
     // 大会(一覧・新規作成画面・保存)
-    Route::resource('tournaments', TournamentController::class)->only(['index', 'create', 'store']);
+    Route::resource('tournaments', TournamentController::class)->only(['index', 'create', 'store', 'show']);
+    Route::post('tournaments/{tournament}/start', [TournamentController::class, 'start'])->name('tournaments.start');
+
+    // 参加者(大会に、個人またはチームを登録・削除する)
+    Route::post('tournaments/{tournament}/participants', [ParticipantController::class, 'store'])->name('participants.store');
+    Route::delete('participants/{participant}', [ParticipantController::class, 'destroy'])->name('participants.destroy');
 
     // 進行中の試合・順位表(試合のデータを作る段階で、中身を作る)
     Route::inertia('games', 'games/Index')->name('games.index');

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -65,5 +66,25 @@ class Tournament extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * この大会の参加者。
+     *
+     * @return HasMany<Participant, $this>
+     */
+    public function participants(): HasMany
+    {
+        return $this->hasMany(Participant::class);
+    }
+
+    /**
+     * この大会の試合。
+     *
+     * @return HasMany<Game, $this>
+     */
+    public function games(): HasMany
+    {
+        return $this->hasMany(Game::class);
     }
 }

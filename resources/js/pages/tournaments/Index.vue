@@ -45,20 +45,21 @@ defineOptions({
         </p>
 
         <ul v-else class="flex flex-col gap-3">
-            <li
-                v-for="tournament in tournaments"
-                :key="tournament.id"
-                class="rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
-            >
-                <p class="text-base font-semibold">{{ tournament.name }}</p>
-                <p class="mt-1 text-sm text-muted-foreground">
-                    {{ tournament.format }} /
-                    {{ tournament.participant_type
-                    }}<template v-if="tournament.team_size">
-                        ({{ tournament.team_size }}人)</template
-                    >
-                    / {{ tournament.status }}
-                </p>
+            <li v-for="tournament in tournaments" :key="tournament.id">
+                <Link
+                    :href="`/tournaments/${tournament.id}`"
+                    class="block rounded-xl border border-sidebar-border/70 p-4 transition-colors hover:bg-accent dark:border-sidebar-border"
+                >
+                    <p class="text-base font-semibold">{{ tournament.name }}</p>
+                    <p class="mt-1 text-sm text-muted-foreground">
+                        {{ tournament.format }} /
+                        {{ tournament.participant_type
+                        }}<template v-if="tournament.team_size">
+                            ({{ tournament.team_size }}人)</template
+                        >
+                        / {{ tournament.status }}
+                    </p>
+                </Link>
             </li>
         </ul>
     </div>

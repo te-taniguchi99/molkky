@@ -1,0 +1,27 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Participant;
+use App\Models\Tournament;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends Factory<Participant>
+ */
+class ParticipantFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            'tournament_id' => Tournament::factory(),
+            'name' => fake()->unique()->name(),
+            'member_count' => 1,
+        ];
+    }
+}
