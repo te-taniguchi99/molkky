@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, FolderGit2, LayoutGrid, Trophy } from '@lucide/vue';
+import { BookOpen, FolderGit2, LayoutGrid, ListOrdered, Play, Trophy, Users } from '@lucide/vue';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -19,14 +19,29 @@ import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'メイン',
         href: dashboard(),
         icon: LayoutGrid,
     },
     {
-        title: '大会',
+        title: '大会の一覧',
         href: '/tournaments',
         icon: Trophy,
+    },
+    {
+        title: '進行中の試合',
+        href: '/games',
+        icon: Play,
+    },
+    {
+        title: '順位表',
+        href: '/standings',
+        icon: ListOrdered,
+    },
+    {
+        title: 'ユーザー管理',
+        href: '/users',
+        icon: Users,
     },
 ];
 

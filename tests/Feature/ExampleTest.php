@@ -1,7 +1,7 @@
 <?php
 
-test('returns a successful response', function () {
+test('the top page redirects to the main screen', function () {
     $response = $this->get(route('home'));
 
-    $response->assertOk();
+    $response->assertRedirect(route('dashboard'));
 });
