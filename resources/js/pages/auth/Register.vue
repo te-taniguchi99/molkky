@@ -17,7 +17,7 @@ defineProps<{
 defineOptions({
     layout: {
         title: 'Create an account',
-        description: 'Enter your details below to create your account',
+        description: '名前とログインIDを入力して、アカウントを作成します',
     },
 });
 </script>
@@ -48,24 +48,24 @@ defineOptions({
             </div>
 
             <div class="grid gap-2">
-                <Label for="email">Email address</Label>
+                <Label for="username">ログインID(英小文字・数字・ . _ - が使えます)</Label>
                 <Input
-                    id="email"
-                    type="email"
+                    id="username"
+                    type="text"
                     required
                     :tabindex="2"
-                    autocomplete="email"
-                    name="email"
-                    placeholder="email@example.com"
+                    autocomplete="username"
+                    autocapitalize="none"
+                    name="username"
+                    placeholder="例:te-taniguchi"
                 />
-                <InputError :message="errors.email" />
+                <InputError :message="errors.username" />
             </div>
 
             <div class="grid gap-2">
                 <Label for="password">Password</Label>
                 <PasswordInput
                     id="password"
-                    required
                     :tabindex="3"
                     autocomplete="new-password"
                     name="password"
@@ -79,7 +79,6 @@ defineOptions({
                 <Label for="password_confirmation">Confirm password</Label>
                 <PasswordInput
                     id="password_confirmation"
-                    required
                     :tabindex="4"
                     autocomplete="new-password"
                     name="password_confirmation"

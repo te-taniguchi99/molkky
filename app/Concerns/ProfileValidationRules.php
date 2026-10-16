@@ -17,7 +17,7 @@ trait ProfileValidationRules
     {
         return [
             'name' => $this->nameRules(),
-            'email' => $this->emailRules($userId),
+            'username' => $this->usernameRules($userId),
         ];
     }
 
@@ -32,17 +32,18 @@ trait ProfileValidationRules
     }
 
     /**
-     * Get the validation rules used to validate user emails.
+     * ログインIDの入力チェック。
+     * 英小文字・数字・ピリオド・アンダースコア・ハイフンだけを許す(大文字は、保存前に小文字へそろえる)。
      *
      * @return array<int, ValidationRule|array<mixed>|string>
      */
-    protected function emailRules(?int $userId = null): array
+    protected function usernameRules(?int $userId = null): array
     {
         return [
             'required',
             'string',
-            'email',
-            'max:255',
+            'max:50',
+            'regex:/^[a-z0-9._-]+$/',
             $userId === null
                 ? Rule::unique(User::class)
                 : Rule::unique(User::class)->ignore($userId),

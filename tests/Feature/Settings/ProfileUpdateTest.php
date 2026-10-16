@@ -19,7 +19,7 @@ test('profile information can be updated', function () {
         ->actingAs($user)
         ->patch(route('profile.update'), [
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'username' => 'te-taniguchi',
         ]);
 
     $response
@@ -29,25 +29,35 @@ test('profile information can be updated', function () {
     $user->refresh();
 
     expect($user->name)->toBe('Test User');
-    expect($user->email)->toBe('test@example.com');
-    expect($user->email_verified_at)->toBeNull();
+    expect($user->username)->toBe('te-taniguchi');
 });
 
-test('email verification status is unchanged when the email address is unchanged', function () {
+test('the login id can stay unchanged', function () {
     $user = User::factory()->create();
 
     $response = $this
         ->actingAs($user)
         ->patch(route('profile.update'), [
             'name' => 'Test User',
-            'email' => $user->email,
+            'username' => $user->username,
         ]);
 
     $response
         ->assertSessionHasNoErrors()
         ->assertRedirect(route('profile.edit'));
+});
 
-    expect($user->refresh()->email_verified_at)->not->toBeNull();
+test('the login id can not be the same as another user', function () {
+    User::factory()->create(['username' => 'taken-id']);
+    $user = User::factory()->create();
+
+    $this
+        ->actingAs($user)
+        ->patch(route('profile.update'), [
+            'name' => 'Test User',
+            'username' => 'taken-id',
+        ])
+        ->assertSessionHasErrors('username');
 });
 
 test('user can delete their account', function () {
