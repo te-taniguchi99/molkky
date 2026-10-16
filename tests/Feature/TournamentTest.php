@@ -53,3 +53,25 @@ test('the reset score must be lower than the target score', function () {
         ])
         ->assertSessionHasErrors('reset_score');
 });
+
+test('a tournament can be deleted together with its participants and games', function () {
+    $this->actingAs(User::factory()->create());
+    $tournament = Tournament::factory()->create();
+    $participant = App\Models\Participant::factory()->create(['tournament_id' => $tournament->id]);
+    App\Models\Game::factory()->create(['tournament_id' => $tournament->id]);
+
+    $this->delete(route('tournaments.destroy', $tournament))->assertRedirect(route('tournaments.index'));
+
+    // 大会と、その参加者・試合が、すべて削除されている
+    expect(Tournament::count())->toBe(0)
+        ->and(App\Models\Participant::count())->toBe(0)
+        ->and(App\Models\Game::count())->toBe(0);
+});
+
+test('guests can not delete a tournament', function () {
+    $tournament = Tournament::factory()->create();
+
+    $this->delete(route('tournaments.destroy', $tournament))->assertRedirect(route('login'));
+
+    expect(Tournament::count())->toBe(1);
+});

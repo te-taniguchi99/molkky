@@ -51,9 +51,16 @@ const canStart = computed(
     () => props.tournament.is_preparing && props.participants.length >= 2,
 );
 
-// 削除の前に、確認のダイアログを出す(false を返すと、削除を中止する)
+// 参加者を削除する前に、確認のダイアログを出す(false を返すと、削除を中止する)
 function confirmDelete(): boolean {
     return window.confirm('削除しますか?');
+}
+
+// 大会を削除する前に、確認のダイアログを出す(参加者と試合も、すべて削除される)
+function confirmDeleteTournament(): boolean {
+    return window.confirm(
+        'この大会を削除しますか?参加者と試合も、すべて削除されます。元に戻せません。',
+    );
 }
 
 // 入力欄(Input)と同じ見た目にそろえる選択欄の見た目
@@ -213,5 +220,20 @@ defineOptions({
                 </li>
             </ul>
         </section>
+
+        <!-- 大会の削除(進行中・終了した大会でも、削除できる) -->
+        <section class="flex flex-col gap-2 border-t pt-6">
+            <Button as-child variant="destructive" size="lg">
+                <Link
+                    :href="`/tournaments/${tournament.id}`"
+                    method="delete"
+                    as="button"
+                    @before="confirmDeleteTournament"
+                >
+                    この大会を削除する
+                </Link>
+            </Button>
+        </section>
+
     </div>
 </template>

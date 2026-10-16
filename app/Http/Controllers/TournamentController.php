@@ -145,4 +145,17 @@ class TournamentController extends Controller
 
         return to_route('tournaments.show', $tournament);
     }
+
+    /**
+     * 大会を削除する。
+     * 大会の参加者と試合も、DB の設定(連動して削除)で、いっしょに削除される。
+     */
+    public function destroy(Tournament $tournament): RedirectResponse
+    {
+        $tournament->delete();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => '大会を削除しました。']);
+
+        return to_route('tournaments.index');
+    }
 }
