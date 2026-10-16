@@ -79,19 +79,32 @@ test('users are rate limited', function () {
     $response->assertTooManyRequests();
 });
 
-test('users can authenticate with only the login id when the password is not required', function () {
+test('any non-empty password is accepted when the password is not checked', function () {
     config(['auth.require_password' => false]);
 
     $user = User::factory()->create();
 
-    // パスワード欄を空のまま送信する
+    // 本当のパスワードとは違う、適当な文字を送信する
     $response = $this->post(route('login.store'), [
         'username' => $user->username,
-        'password' => '',
+        'password' => 'anything',
     ]);
 
     $this->assertAuthenticatedAs($user);
     $response->assertRedirect(route('dashboard', absolute: false));
+});
+
+test('an empty password is rejected even when the password is not checked', function () {
+    config(['auth.require_password' => false]);
+
+    $user = User::factory()->create();
+
+    $this->post(route('login.store'), [
+        'username' => $user->username,
+        'password' => '',
+    ])->assertSessionHasErrors('password');
+
+    $this->assertGuest();
 });
 
 test('users can not authenticate with an unknown login id', function () {
@@ -99,7 +112,7 @@ test('users can not authenticate with an unknown login id', function () {
 
     $this->post(route('login.store'), [
         'username' => 'unknown-user',
-        'password' => '',
+        'password' => 'anything',
     ]);
 
     $this->assertGuest();
@@ -112,18 +125,8 @@ test('inactive users can not log in', function () {
 
     $this->post(route('login.store'), [
         'username' => $user->username,
-        'password' => '',
+        'password' => 'anything',
     ]);
 
-    $this->assertGuest();
-});
-
-test('the password is checked only when it is required', function () {
-    config(['auth.require_password' => true]);
-
-    $user = User::factory()->create();
-
-    // パスワードが空のままでは、ログインできない
-    $this->post(route('login.store'), ['username' => $user->username, 'password' => '']);
     $this->assertGuest();
 });

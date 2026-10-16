@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Middleware\EnsureUserIsActive;
-use App\Http\Middleware\FillBlankLoginPassword;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
@@ -25,8 +24,6 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
             // 無効なアカウントを、すべての画面アクセスの手前で止める
             EnsureUserIsActive::class,
-            // パスワードを確認しない設定のとき、ログインの空のパスワードを埋める
-            FillBlankLoginPassword::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
