@@ -81,3 +81,41 @@ test('a tournament can not be started twice', function () {
     // 3 人の総当たりは 3 試合のまま(2 回目で増えない)
     expect($tournament->games()->count())->toBe(3);
 });
+
+test('a round robin can shuffle the order of games without changing the pairs', function () {
+    // 登録順の、試合の並び(基準)
+    $normal = makeTournament(TournamentFormat::RoundRobin, 4);
+    $this->post(route('tournaments.start', $normal));
+    $pairsOf = fn (Tournament $tournament) => $tournament->games()->with('participants')->orderBy('position')->get()
+        ->map(fn (Game $game) => $game->participants->pluck('name')->sort()->implode('-'))->all();
+    $normalOrder = $pairsOf($normal);
+
+    $differentOrderFound = false;
+
+    // 乱数の種を変えて、何回か試す(1回だけだと、たまたま同じ並びになることがあるため)
+    foreach (range(1, 5) as $seed) {
+        mt_srand($seed);
+
+        $shuffled = makeTournament(TournamentFormat::RoundRobin, 4);
+        $this->post(route('tournaments.start', $shuffled), ['shuffle' => '1']);
+        $order = $pairsOf($shuffled);
+
+        // 組み合わせは同じ(6試合で、すべての組み合わせがそろっている)。並びだけが変わる
+        expect($order)->toHaveCount(6)
+            ->and(collect($order)->sort()->values()->all())->toBe(collect($normalOrder)->sort()->values()->all());
+
+        $differentOrderFound = $differentOrderFound || $order !== $normalOrder;
+    }
+
+    expect($differentOrderFound)->toBeTrue();
+});
+
+test('the order stays in registration order unless shuffle is requested', function () {
+    $tournament = makeTournament(TournamentFormat::RoundRobin, 3);
+    $this->post(route('tournaments.start', $tournament));
+
+    $order = $tournament->games()->with('participants')->orderBy('position')->get()
+        ->map(fn (Game $game) => $game->participants->pluck('name')->implode('-'))->all();
+
+    expect($order)->toBe(['P1-P2', 'P1-P3', 'P2-P3']);
+});

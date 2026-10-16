@@ -13,6 +13,7 @@ use App\Models\Participant;
 use App\Models\Tournament;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -118,6 +119,7 @@ class TournamentController extends Controller
                 'format' => $tournament->format->label(),
                 'participant_type' => $tournament->participant_type->label(),
                 'is_team' => $tournament->participant_type === ParticipantType::Team,
+                'is_round_robin' => $tournament->format === TournamentFormat::RoundRobin,
                 'status' => $tournament->status->label(),
                 'is_preparing' => $tournament->status === TournamentStatus::Preparing,
             ],
@@ -130,7 +132,7 @@ class TournamentController extends Controller
     /**
      * 大会を開始して、試合を自動で作る。
      */
-    public function start(Tournament $tournament, StartTournament $startTournament): RedirectResponse
+    public function start(Request $request, Tournament $tournament, StartTournament $startTournament): RedirectResponse
     {
         if ($tournament->status !== TournamentStatus::Preparing) {
             Inertia::flash('toast', ['type' => 'error', 'message' => 'この大会は、すでに開始しています。']);
@@ -144,7 +146,8 @@ class TournamentController extends Controller
             return to_route('tournaments.show', $tournament);
         }
 
-        $startTournament($tournament);
+        // 「試合の順番をランダムにする」にチェックがあるときだけ、総当たり戦の順番を並べ替える
+        $startTournament($tournament, $request->boolean('shuffle'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => '大会を開始しました。試合を作成しました。']);
 

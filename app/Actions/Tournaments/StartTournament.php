@@ -16,16 +16,18 @@ class StartTournament
 {
     /**
      * 大会を開始する。
+     *
+     * @param  bool  $shuffle  true のとき、総当たり戦の試合の順番を、ランダムに並べ替える
      */
-    public function __invoke(Tournament $tournament): void
+    public function __invoke(Tournament $tournament, bool $shuffle = false): void
     {
         // 登録した順に、参加者の id を並べる
         $ids = $tournament->participants()->orderBy('id')->pluck('id')->all();
 
-        DB::transaction(function () use ($tournament, $ids) {
+        DB::transaction(function () use ($tournament, $ids, $shuffle) {
             // 作る試合を、「出る参加者の id の配列」の一覧として用意する
             $matches = $tournament->format === TournamentFormat::RoundRobin
-                ? $this->roundRobin($ids)
+                ? $this->roundRobin($ids, $shuffle)
                 : $this->knockoutFirstRound($ids);
 
             foreach ($matches as $index => $participantIds) {
@@ -53,11 +55,12 @@ class StartTournament
 
     /**
      * 総当たり戦: 参加者の全ての組み合わせを作る。
+     * $shuffle が true のときは、試合の順番(戦う順)を、ランダムに並べ替える。
      *
      * @param  array<int, int>  $ids
      * @return array<int, array<int, int>>
      */
-    private function roundRobin(array $ids): array
+    private function roundRobin(array $ids, bool $shuffle = false): array
     {
         $matches = [];
         $count = count($ids);
@@ -66,6 +69,11 @@ class StartTournament
             for ($j = $i + 1; $j < $count; $j++) {
                 $matches[] = [$ids[$i], $ids[$j]];
             }
+        }
+
+        // 組み合わせは変えずに、試合の順番だけを入れ替える
+        if ($shuffle) {
+            shuffle($matches);
         }
 
         return $matches;

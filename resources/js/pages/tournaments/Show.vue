@@ -17,6 +17,7 @@ type Tournament = {
     format: string;
     participant_type: string;
     is_team: boolean;
+    is_round_robin: boolean;
     status: string;
     is_preparing: boolean;
 };
@@ -214,17 +215,26 @@ defineOptions({
 
         <!-- 大会の開始 -->
         <section v-if="tournament.is_preparing" class="flex flex-col gap-2">
-            <Button as-child size="lg" :disabled="!canStart">
-                <Link
-                    v-if="canStart"
-                    :href="`/tournaments/${tournament.id}/start`"
-                    method="post"
-                    as="button"
+            <Form
+                :action="`/tournaments/${tournament.id}/start`"
+                method="post"
+                class="flex flex-col gap-3"
+                v-slot="{ processing }"
+            >
+                <!-- 総当たり戦だけ、試合の順番をランダムにできる(初期値は、ランダムにする) -->
+                <label
+                    v-if="tournament.is_round_robin"
+                    class="flex items-center gap-3 rounded-md border border-input p-3 text-sm"
                 >
+                    <input type="checkbox" name="shuffle" value="1" checked class="size-5" />
+                    試合の順番をランダムにする(チェックを外すと、登録順)
+                </label>
+
+                <Button type="submit" size="lg" :disabled="!canStart || processing">
+                    <Spinner v-if="processing" />
                     大会を開始する(試合を作成)
-                </Link>
-                <span v-else>大会を開始する(試合を作成)</span>
-            </Button>
+                </Button>
+            </Form>
             <p v-if="!canStart" class="text-sm text-muted-foreground">
                 {{ unit }}が2つ以上になると、開始できます。開始すると、{{ unit }}は変更できません。
             </p>
