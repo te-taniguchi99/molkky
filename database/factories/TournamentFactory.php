@@ -24,7 +24,6 @@ class TournamentFactory extends Factory
             'name' => fake()->words(3, true),
             'format' => TournamentFormat::RoundRobin,
             'participant_type' => ParticipantType::Individual,
-            'team_size' => null,
             'target_score' => 50,
             'reset_score' => 25,
             'max_consecutive_misses' => 3,

@@ -16,11 +16,10 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $tournament_id
  * @property string $name
- * @property int $member_count
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['tournament_id', 'name', 'member_count'])]
+#[Fillable(['tournament_id', 'name'])]
 class Participant extends Model
 {
     /** @use HasFactory<ParticipantFactory> */
@@ -34,6 +33,18 @@ class Participant extends Model
     public function tournament(): BelongsTo
     {
         return $this->belongsTo(Tournament::class);
+    }
+
+    /**
+     * この参加者に所属するユーザー(個人戦は 1 人、チーム戦は複数人)。
+     *
+     * @return BelongsToMany<User, $this>
+     */
+    public function members(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'participant_user')
+            ->withPivot('tournament_id')
+            ->withTimestamps();
     }
 
     /**

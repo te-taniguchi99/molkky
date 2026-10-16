@@ -19,7 +19,6 @@ use Illuminate\Support\Carbon;
  * @property string $name
  * @property TournamentFormat $format
  * @property ParticipantType $participant_type
- * @property int|null $team_size
  * @property int $target_score
  * @property int $reset_score
  * @property int $max_consecutive_misses
@@ -32,7 +31,6 @@ use Illuminate\Support\Carbon;
     'name',
     'format',
     'participant_type',
-    'team_size',
     'target_score',
     'reset_score',
     'max_consecutive_misses',

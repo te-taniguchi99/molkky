@@ -38,23 +38,7 @@ test('an individual tournament can be created with default rules', function () {
 
     $tournament = Tournament::firstWhere('name', '第1回大会');
     expect($tournament)->not->toBeNull()
-        ->and($tournament->user_id)->toBe($user->id)
-        ->and($tournament->team_size)->toBeNull();
-});
-
-test('a team tournament requires the team size', function () {
-    $this->actingAs(User::factory()->create())
-        ->post(route('tournaments.store'), [
-            'name' => 'チーム大会',
-            'format' => TournamentFormat::Knockout->value,
-            'participant_type' => ParticipantType::Team->value,
-            'target_score' => 50,
-            'reset_score' => 25,
-            'max_consecutive_misses' => 3,
-        ])
-        ->assertSessionHasErrors('team_size');
-
-    expect(Tournament::count())->toBe(0);
+        ->and($tournament->user_id)->toBe($user->id);
 });
 
 test('the reset score must be lower than the target score', function () {

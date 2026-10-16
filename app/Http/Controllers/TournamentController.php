@@ -10,7 +10,9 @@ use App\Http\Requests\StoreTournamentRequest;
 use App\Models\Game;
 use App\Models\Participant;
 use App\Models\Tournament;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,7 +32,6 @@ class TournamentController extends Controller
                 'name' => $tournament->name,
                 'format' => $tournament->format->label(),
                 'participant_type' => $tournament->participant_type->label(),
-                'team_size' => $tournament->team_size,
                 'status' => $tournament->status->label(),
             ]);
 
@@ -60,11 +61,6 @@ class TournamentController extends Controller
     {
         $validated = $request->validated();
 
-        // 個人戦のときは、1チームの人数を持たせない
-        if ($validated['participant_type'] === ParticipantType::Individual->value) {
-            $validated['team_size'] = null;
-        }
-
         Tournament::create([...$validated, 'user_id' => $request->user()->id]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => '大会を作成しました。']);
@@ -78,13 +74,23 @@ class TournamentController extends Controller
     public function show(Tournament $tournament): Response
     {
         $participants = $tournament->participants()
+            ->with('members')
             ->orderBy('id')
             ->get()
             ->map(fn (Participant $participant) => [
                 'id' => $participant->id,
                 'name' => $participant->name,
-                'member_count' => $participant->member_count,
+                // 所属するユーザーの名前(チーム戦では、人数も分かる)
+                'members' => $participant->members->pluck('name')->all(),
             ]);
+
+        // 参加者に選べるユーザー: 有効で、この大会のどの参加者にも入っていない人
+        $candidates = User::query()
+            ->where('is_active', true)
+            ->whereNotIn('id', DB::table('participant_user')->where('tournament_id', $tournament->id)->pluck('user_id'))
+            ->orderBy('id')
+            ->get()
+            ->map(fn (User $user) => ['id' => $user->id, 'name' => $user->name, 'username' => $user->username]);
 
         // 試合は、回戦・並び順の順に、出る参加者の名前といっしょに渡す
         $games = $tournament->games()
@@ -107,11 +113,11 @@ class TournamentController extends Controller
                 'format' => $tournament->format->label(),
                 'participant_type' => $tournament->participant_type->label(),
                 'is_team' => $tournament->participant_type === ParticipantType::Team,
-                'team_size' => $tournament->team_size,
                 'status' => $tournament->status->label(),
                 'is_preparing' => $tournament->status === TournamentStatus::Preparing,
             ],
             'participants' => $participants,
+            'candidates' => $candidates,
             'games' => $games,
         ]);
     }

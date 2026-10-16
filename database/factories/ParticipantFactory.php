@@ -21,7 +21,6 @@ class ParticipantFactory extends Factory
         return [
             'tournament_id' => Tournament::factory(),
             'name' => fake()->unique()->name(),
-            'member_count' => 1,
         ];
     }
 }

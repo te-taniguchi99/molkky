@@ -7,7 +7,9 @@ use App\Enums\TournamentStatus;
 use App\Http\Requests\StoreParticipantRequest;
 use App\Models\Participant;
 use App\Models\Tournament;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class ParticipantController extends Controller
@@ -26,15 +28,24 @@ class ParticipantController extends Controller
 
         $validated = $request->validated();
 
-        // 個人戦は 1 人。チーム戦は、入力した人数(未入力なら、大会で決めた目安の人数)
-        $memberCount = $tournament->participant_type === ParticipantType::Individual
-            ? 1
-            : ($validated['member_count'] ?? $tournament->team_size ?? 1);
+        DB::transaction(function () use ($tournament, $validated) {
+            if ($tournament->participant_type === ParticipantType::Individual) {
+                // 個人戦: 選んだユーザーが 1 人の参加者になる。名前は、ユーザー名
+                $userIds = [$validated['user_id']];
+                $name = User::findOrFail($validated['user_id'])->name;
+            } else {
+                // チーム戦: 入力したチーム名に、選んだユーザーが所属する
+                $userIds = $validated['user_ids'];
+                $name = $validated['name'];
+            }
 
-        $tournament->participants()->create([
-            'name' => $validated['name'],
-            'member_count' => $memberCount,
-        ]);
+            $participant = $tournament->participants()->create(['name' => $name]);
+
+            // 所属するユーザーを登録する(どの大会かも、いっしょに記録する)
+            foreach ($userIds as $userId) {
+                $participant->members()->attach($userId, ['tournament_id' => $tournament->id]);
+            }
+        });
 
         return to_route('tournaments.show', $tournament);
     }

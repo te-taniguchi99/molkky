@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -18,9 +17,6 @@ defineProps<{
     formats: Option[];
     participantTypes: Option[];
 }>();
-
-// 「チーム戦」を選んだときだけ、1チームの人数の入力欄を表示するための状態
-const participantType = ref('individual');
 
 // 選択欄(select)に付ける見た目。入力欄(Input)と同じ見た目にそろえる
 const selectClass =
@@ -77,7 +73,6 @@ defineOptions({
                 <Label for="participant_type">参加形態</Label>
                 <select
                     id="participant_type"
-                    v-model="participantType"
                     name="participant_type"
                     :class="selectClass"
                     required
@@ -87,21 +82,6 @@ defineOptions({
                     </option>
                 </select>
                 <InputError :message="errors.participant_type" />
-            </div>
-
-            <!-- チーム戦を選んだときだけ表示する -->
-            <div v-if="participantType === 'team'" class="grid gap-2">
-                <Label for="team_size">1チームの人数</Label>
-                <Input
-                    id="team_size"
-                    name="team_size"
-                    type="number"
-                    inputmode="numeric"
-                    min="2"
-                    max="10"
-                    required
-                />
-                <InputError :message="errors.team_size" />
             </div>
 
             <div class="grid gap-2">

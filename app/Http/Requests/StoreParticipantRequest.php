@@ -2,8 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ParticipantType;
+use App\Models\Tournament;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class StoreParticipantRequest extends FormRequest
@@ -15,16 +18,38 @@ class StoreParticipantRequest extends FormRequest
      */
     public function rules(): array
     {
+        /** @var Tournament $tournament */
+        $tournament = $this->route('tournament');
+
+        // この大会で、すでにどこかの参加者に入っているユーザーの id
+        $assignedUserIds = DB::table('participant_user')
+            ->where('tournament_id', $tournament->id)
+            ->pluck('user_id')
+            ->all();
+
+        // 選べるユーザー: 存在して、有効で、まだどの参加者にも入っていない人
+        $selectableUser = Rule::exists('users', 'id')
+            ->where('is_active', true)
+            ->whereNotIn('id', $assignedUserIds);
+
+        if ($tournament->participant_type === ParticipantType::Individual) {
+            // 個人戦: ユーザーを 1 人選ぶ(名前は、ユーザー名になる)
+            return [
+                'user_id' => ['required', 'integer', $selectableUser],
+            ];
+        }
+
+        // チーム戦: チーム名と、所属するユーザー(1 人以上)
         return [
-            // 同じ大会の中で、同じ名前を重複させない
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('participants', 'name')->where('tournament_id', $this->route('tournament')->id),
+                // 同じ大会の中で、同じチーム名を重複させない
+                Rule::unique('participants', 'name')->where('tournament_id', $tournament->id),
             ],
-            // チーム戦の人数。チームごとに自由に決められる(個人戦では使わない)
-            'member_count' => ['nullable', 'integer', 'min:1', 'max:30'],
+            'user_ids' => ['required', 'array', 'min:1'],
+            'user_ids.*' => ['integer', 'distinct', $selectableUser],
         ];
     }
 
@@ -36,8 +61,10 @@ class StoreParticipantRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'name' => '名前',
-            'member_count' => '人数',
+            'name' => 'チーム名',
+            'user_id' => 'ユーザー',
+            'user_ids' => '所属するユーザー',
+            'user_ids.*' => '所属するユーザー',
         ];
     }
 }

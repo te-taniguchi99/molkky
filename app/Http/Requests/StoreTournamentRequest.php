@@ -21,14 +21,6 @@ class StoreTournamentRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'format' => ['required', Rule::enum(TournamentFormat::class)],
             'participant_type' => ['required', Rule::enum(ParticipantType::class)],
-            // チーム戦のときだけ必須。1チーム 2〜10 人(1 人は個人戦として扱うため)
-            'team_size' => [
-                Rule::requiredIf(fn () => $this->input('participant_type') === ParticipantType::Team->value),
-                'nullable',
-                'integer',
-                'min:2',
-                'max:10',
-            ],
             'target_score' => ['required', 'integer', 'min:1', 'max:1000'],
             // 戻る得点は、目標点より小さい値にする
             'reset_score' => ['required', 'integer', 'min:0', 'lt:target_score'],
@@ -47,7 +39,6 @@ class StoreTournamentRequest extends FormRequest
             'name' => '大会名',
             'format' => '方式',
             'participant_type' => '参加形態',
-            'team_size' => '1チームの人数',
             'target_score' => '目標点',
             'reset_score' => '戻る得点',
             'max_consecutive_misses' => '失格になる連続ミス回数',

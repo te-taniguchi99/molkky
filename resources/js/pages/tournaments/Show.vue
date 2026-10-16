@@ -15,7 +15,6 @@ type Tournament = {
     format: string;
     participant_type: string;
     is_team: boolean;
-    team_size: number | null;
     status: string;
     is_preparing: boolean;
 };
@@ -23,7 +22,13 @@ type Tournament = {
 type Participant = {
     id: number;
     name: string;
-    member_count: number;
+    members: string[];
+};
+
+type Candidate = {
+    id: number;
+    name: string;
+    username: string;
 };
 
 type Game = {
@@ -37,6 +42,7 @@ type Game = {
 const props = defineProps<{
     tournament: Tournament;
     participants: Participant[];
+    candidates: Candidate[];
     games: Game[];
 }>();
 
@@ -49,6 +55,10 @@ const canStart = computed(
 function confirmDelete(): boolean {
     return window.confirm('削除しますか?');
 }
+
+// 入力欄(Input)と同じ見た目にそろえる選択欄の見た目
+const selectClass =
+    'h-9 w-full rounded-md border border-input bg-transparent px-3 text-base shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none md:text-sm';
 
 defineOptions({
     layout: {
@@ -72,7 +82,7 @@ defineOptions({
     <div class="mx-auto flex w-full max-w-2xl flex-col gap-8 p-4">
         <Heading
             :title="tournament.name"
-            :description="`${tournament.format} / ${tournament.participant_type}${tournament.is_team && tournament.team_size ? `(目安 ${tournament.team_size}人)` : ''} / ${tournament.status}`"
+            :description="`${tournament.format} / ${tournament.participant_type} / ${tournament.status}`"
         />
 
         <!-- 参加者 -->
@@ -91,12 +101,18 @@ defineOptions({
                     :key="participant.id"
                     class="flex items-center justify-between gap-3 rounded-xl border border-sidebar-border/70 p-3 dark:border-sidebar-border"
                 >
-                    <p class="min-w-0 truncate">
-                        {{ participant.name }}
-                        <span v-if="tournament.is_team" class="text-sm text-muted-foreground">
-                            ({{ participant.member_count }}人)
-                        </span>
-                    </p>
+                    <div class="min-w-0">
+                        <p class="truncate font-medium">
+                            {{ participant.name }}
+                            <span v-if="tournament.is_team" class="text-sm font-normal text-muted-foreground">
+                                ({{ participant.members.length }}人)
+                            </span>
+                        </p>
+                        <!-- チーム戦は、所属するユーザーの名前を表示する -->
+                        <p v-if="tournament.is_team" class="truncate text-sm text-muted-foreground">
+                            {{ participant.members.join('、') }}
+                        </p>
+                    </div>
                     <Button v-if="tournament.is_preparing" as-child variant="outline" size="sm">
                         <Link
                             :href="`/participants/${participant.id}`"
@@ -115,32 +131,48 @@ defineOptions({
                 v-if="tournament.is_preparing"
                 :action="`/tournaments/${tournament.id}/participants`"
                 method="post"
-                :reset-on-success="['name']"
+                :reset-on-success="['name', 'user_id', 'user_ids']"
                 class="flex flex-col gap-4 rounded-xl border border-sidebar-border/70 p-4 dark:border-sidebar-border"
                 v-slot="{ errors, processing }"
             >
-                <div class="grid gap-2">
-                    <Label for="name">{{ tournament.is_team ? 'チーム名' : '名前' }}</Label>
-                    <Input id="name" name="name" required />
-                    <InputError :message="errors.name" />
+                <p v-if="candidates.length === 0" class="text-sm text-muted-foreground">
+                    選べるユーザーがいません。「ユーザー管理」で、ユーザーを追加してください。
+                </p>
+
+                <!-- 個人戦: ユーザーを 1 人選ぶ -->
+                <div v-if="!tournament.is_team && candidates.length > 0" class="grid gap-2">
+                    <Label for="user_id">ユーザー</Label>
+                    <select id="user_id" name="user_id" :class="selectClass" required>
+                        <option v-for="candidate in candidates" :key="candidate.id" :value="candidate.id">
+                            {{ candidate.name }}({{ candidate.username }})
+                        </option>
+                    </select>
+                    <InputError :message="errors.user_id" />
                 </div>
 
-                <!-- チーム戦のときだけ、人数を入力する(チームごとに自由。割り切れなくてもよい) -->
-                <div v-if="tournament.is_team" class="grid gap-2">
-                    <Label for="member_count">人数</Label>
-                    <Input
-                        id="member_count"
-                        name="member_count"
-                        type="number"
-                        inputmode="numeric"
-                        min="1"
-                        max="30"
-                        :default-value="tournament.team_size ?? 1"
-                    />
-                    <InputError :message="errors.member_count" />
-                </div>
+                <!-- チーム戦: チーム名を入力し、所属するユーザーを選ぶ(人数は、選んだ数で決まる) -->
+                <template v-if="tournament.is_team && candidates.length > 0">
+                    <div class="grid gap-2">
+                        <Label for="name">チーム名</Label>
+                        <Input id="name" name="name" required />
+                        <InputError :message="errors.name" />
+                    </div>
 
-                <Button type="submit" size="lg" :disabled="processing">
+                    <fieldset class="grid gap-2">
+                        <legend class="mb-1 text-sm font-medium">所属するユーザー</legend>
+                        <label
+                            v-for="candidate in candidates"
+                            :key="candidate.id"
+                            class="flex items-center gap-3 rounded-md border border-input p-3 text-sm"
+                        >
+                            <input type="checkbox" name="user_ids[]" :value="candidate.id" class="size-5" />
+                            {{ candidate.name }}({{ candidate.username }})
+                        </label>
+                        <InputError :message="errors.user_ids" />
+                    </fieldset>
+                </template>
+
+                <Button v-if="candidates.length > 0" type="submit" size="lg" :disabled="processing">
                     <Spinner v-if="processing" />
                     参加者を追加する
                 </Button>

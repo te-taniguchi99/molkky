@@ -9,7 +9,6 @@ type Tournament = {
     name: string;
     format: string;
     participant_type: string;
-    team_size: number | null;
     status: string;
 };
 
@@ -53,11 +52,8 @@ defineOptions({
                     <p class="text-base font-semibold">{{ tournament.name }}</p>
                     <p class="mt-1 text-sm text-muted-foreground">
                         {{ tournament.format }} /
-                        {{ tournament.participant_type
-                        }}<template v-if="tournament.team_size">
-                            ({{ tournament.team_size }}人)</template
-                        >
-                        / {{ tournament.status }}
+                        {{ tournament.participant_type }} /
+                        {{ tournament.status }}
                     </p>
                 </Link>
             </li>
