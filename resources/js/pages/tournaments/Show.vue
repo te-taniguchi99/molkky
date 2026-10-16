@@ -51,6 +51,9 @@ const canStart = computed(
     () => props.tournament.is_preparing && props.participants.length >= 2,
 );
 
+// 参加者の呼び方(チーム戦は「チーム」、個人戦は「参加者」)
+const unit = computed(() => (props.tournament.is_team ? 'チーム' : '参加者'));
+
 // 参加者を削除する前に、確認のダイアログを出す(false を返すと、削除を中止する)
 function confirmDelete(): boolean {
     return window.confirm('削除しますか?');
@@ -87,19 +90,26 @@ defineOptions({
     <Head :title="tournament.name" />
 
     <div class="mx-auto flex w-full max-w-2xl flex-col gap-8 p-4">
-        <Heading
-            :title="tournament.name"
-            :description="`${tournament.format} / ${tournament.participant_type} / ${tournament.status}`"
-        />
+        <Heading :title="tournament.name" class="-mb-4" />
+
+        <!-- 大会の情報(項目名つきで表示する) -->
+        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+            <dt class="text-muted-foreground">方式</dt>
+            <dd>{{ tournament.format }}</dd>
+            <dt class="text-muted-foreground">参加形態</dt>
+            <dd>{{ tournament.participant_type }}</dd>
+            <dt class="text-muted-foreground">状態</dt>
+            <dd>{{ tournament.status }}</dd>
+        </dl>
 
         <!-- 参加者 -->
         <section class="flex flex-col gap-4">
             <h2 class="text-lg font-semibold">
-                参加者({{ participants.length }})
+                {{ unit }}({{ participants.length }})
             </h2>
 
             <p v-if="participants.length === 0" class="text-sm text-muted-foreground">
-                まだ参加者がいません。
+                まだ{{ unit }}がありません。
             </p>
 
             <ul v-else class="flex flex-col gap-2">
@@ -181,7 +191,7 @@ defineOptions({
 
                 <Button v-if="candidates.length > 0" type="submit" size="lg" :disabled="processing">
                     <Spinner v-if="processing" />
-                    参加者を追加する
+                    {{ unit }}を追加する
                 </Button>
             </Form>
         </section>
@@ -200,7 +210,7 @@ defineOptions({
                 <span v-else>大会を開始する(試合を作成)</span>
             </Button>
             <p v-if="!canStart" class="text-sm text-muted-foreground">
-                参加者が2つ以上になると、開始できます。開始すると、参加者は変更できません。
+                {{ unit }}が2つ以上になると、開始できます。開始すると、{{ unit }}は変更できません。
             </p>
         </section>
 
