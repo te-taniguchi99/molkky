@@ -10,7 +10,7 @@ test('active users can access the dashboard', function () {
 
 test('inactive users are logged out and redirected to the login screen', function () {
     // 無効なアカウントを作る
-    $user = User::factory()->create(['is_active' => false]);
+    $user = User::factory()->inactive()->create();
 
     $response = $this->actingAs($user)->get(route('dashboard'));
 
