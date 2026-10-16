@@ -21,7 +21,7 @@ class TournamentFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->words(3, true),
+            'name' => fake()->unique()->words(3, true),
             'format' => TournamentFormat::RoundRobin,
             'participant_type' => ParticipantType::Individual,
             'target_score' => 50,

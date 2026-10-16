@@ -18,13 +18,26 @@ class StoreTournamentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            // 同じ名前の大会は、作れない
+            'name' => ['required', 'string', 'max:255', Rule::unique('tournaments', 'name')],
             'format' => ['required', Rule::enum(TournamentFormat::class)],
             'participant_type' => ['required', Rule::enum(ParticipantType::class)],
             'target_score' => ['required', 'integer', 'min:1', 'max:1000'],
             // 戻る得点は、目標点より小さい値にする
             'reset_score' => ['required', 'integer', 'min:0', 'lt:target_score'],
             'max_consecutive_misses' => ['required', 'integer', 'min:1', 'max:10'],
+        ];
+    }
+
+    /**
+     * 入力チェックのエラーメッセージ(標準のメッセージを、分かりやすく置き換える)。
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'name.unique' => '同じ名前の大会が、すでにあります。別の名前にしてください。',
         ];
     }
 

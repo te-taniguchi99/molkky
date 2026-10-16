@@ -54,6 +54,20 @@ class StoreParticipantRequest extends FormRequest
     }
 
     /**
+     * 入力チェックのエラーメッセージ(標準のメッセージを、分かりやすく置き換える)。
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'name.unique' => '同じ名前のチームが、すでにあります。別の名前にしてください。',
+            'user_ids.*.exists' => '選べないユーザーが含まれています。すでに別のチームに入っている可能性があります。',
+            'user_id.exists' => '選べないユーザーです。すでに別の参加者に入っている可能性があります。',
+        ];
+    }
+
+    /**
      * 画面に表示する項目名。
      *
      * @return array<string, string>

@@ -75,3 +75,19 @@ test('guests can not delete a tournament', function () {
 
     expect(Tournament::count())->toBe(1);
 });
+
+test('a tournament name must be unique', function () {
+    $this->actingAs(User::factory()->create());
+    Tournament::factory()->create(['name' => '第1回大会']);
+
+    $this->post(route('tournaments.store'), [
+        'name' => '第1回大会',
+        'format' => TournamentFormat::RoundRobin->value,
+        'participant_type' => ParticipantType::Individual->value,
+        'target_score' => 50,
+        'reset_score' => 25,
+        'max_consecutive_misses' => 3,
+    ])->assertSessionHasErrors('name');
+
+    expect(Tournament::count())->toBe(1);
+});
