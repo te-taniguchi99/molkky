@@ -47,7 +47,7 @@ const props = withDefaults(
 
 // 選択欄(select)に付ける見た目。入力欄(Input)と同じ見た目にそろえる
 const selectClass =
-    'h-9 w-full rounded-md border border-input bg-transparent px-3 text-base shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none md:text-sm';
+    'h-9 w-full rounded-md border border-input bg-background text-foreground px-3 text-base dark:[color-scheme:dark] shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none md:text-sm';
 
 // 値から表示名を探す(変更できない項目を、文字で表示するため)
 function labelOf(options: Option[], value: string | undefined): string {
@@ -105,7 +105,7 @@ function labelOf(options: Option[], value: string | undefined): string {
             <div class="grid gap-2">
                 <Label for="format">方式</Label>
                 <select id="format" name="format" :class="selectClass" required>
-                    <option
+                    <option class="bg-background text-foreground"
                         v-for="option in formats"
                         :key="option.value"
                         :value="option.value"
@@ -125,7 +125,7 @@ function labelOf(options: Option[], value: string | undefined): string {
                     :class="selectClass"
                     required
                 >
-                    <option
+                    <option class="bg-background text-foreground"
                         v-for="option in participantTypes"
                         :key="option.value"
                         :value="option.value"

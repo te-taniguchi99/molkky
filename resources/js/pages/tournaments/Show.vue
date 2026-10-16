@@ -71,7 +71,7 @@ function confirmDeleteTournament(): boolean {
 
 // 入力欄(Input)と同じ見た目にそろえる選択欄の見た目
 const selectClass =
-    'h-9 w-full rounded-md border border-input bg-transparent px-3 text-base shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none md:text-sm';
+    'h-9 w-full rounded-md border border-input bg-background text-foreground px-3 text-base dark:[color-scheme:dark] shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none md:text-sm';
 
 defineOptions({
     layout: {
@@ -177,7 +177,7 @@ defineOptions({
                 <div v-if="!tournament.is_team && candidates.length > 0" class="grid gap-2">
                     <Label for="user_id">ユーザー</Label>
                     <select id="user_id" name="user_id" :class="selectClass" required>
-                        <option v-for="candidate in candidates" :key="candidate.id" :value="candidate.id">
+                        <option class="bg-background text-foreground" v-for="candidate in candidates" :key="candidate.id" :value="candidate.id">
                             {{ candidate.name }}({{ candidate.username }})
                         </option>
                     </select>
