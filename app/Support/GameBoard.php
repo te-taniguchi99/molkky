@@ -64,8 +64,7 @@ class GameBoard
                 'id' => $throw->id,
                 'name' => $names[$throw->participant_id] ?? '',
                 'label' => match ($throw->kind) {
-                    ThrowKind::Single => $throw->value.'番',
-                    ThrowKind::Multiple => $throw->value.'本',
+                    ThrowKind::Score => $throw->value.'点',
                     ThrowKind::Miss => 'ミス',
                 },
             ])->values()->all(),

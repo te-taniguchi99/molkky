@@ -20,10 +20,10 @@ return new class extends Migration
             // 入力した審判(ユーザーが削除されても、記録は残す)
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
 
-            // 種類: single(1本) / multiple(2本以上) / miss(ミス)
+            // 種類: score(得点が入った) / miss(ミス)
             $table->string('kind');
 
-            // single は倒れた番号(1〜12)、multiple は倒れた本数(2〜12)、miss は 0
+            // score は得点(1〜12)、miss は 0
             $table->unsignedTinyInteger('value')->default(0);
 
             $table->timestamps();

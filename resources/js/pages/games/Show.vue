@@ -49,9 +49,6 @@ const current = computed(() =>
     props.board.participants.find((participant) => participant.is_current),
 );
 
-// 「2本以上」の本数選択を表示しているか
-const showMultiple = ref(false);
-
 // 送信中か(押し間違い・二重送信を防ぐため、送信中はボタンを押せなくする)
 const sending = ref(false);
 
@@ -62,7 +59,7 @@ const errorMessage = ref('');
  * 1投を記録する。
  * 画面に表示している手番の参加者の id もいっしょに送り、別の端末で手番が変わっていないかを、サーバーで確かめる。
  */
-function record(kind: 'single' | 'multiple' | 'miss', value = 0): void {
+function record(kind: 'score' | 'miss', value = 0): void {
     if (!current.value || sending.value) {
         return;
     }
@@ -76,10 +73,8 @@ function record(kind: 'single' | 'multiple' | 'miss', value = 0): void {
             preserveScroll: true,
             onStart: () => (sending.value = true),
             onFinish: () => (sending.value = false),
-            onSuccess: () => (showMultiple.value = false),
             onError: (errors) => {
                 errorMessage.value = Object.values(errors)[0] ?? '記録できませんでした。';
-                showMultiple.value = false;
                 // 手番が変わっていた場合に備えて、最新の状態を取り直す
                 router.reload({ only: ['board'] });
             },
@@ -176,51 +171,21 @@ defineOptions({
                 {{ errorMessage }}
             </p>
 
-            <!-- 1本だけ倒れたとき: 倒れた番号を押す -->
+            <!-- 得点を押す(1本だけ倒れたなら、倒れた番号。2本以上なら、倒れた本数) -->
             <div>
-                <p class="mb-2 text-sm text-muted-foreground">1本だけ倒れた(倒れた番号)</p>
+                <p class="mb-2 text-sm text-muted-foreground">得点(1本なら倒れた番号 / 2本以上なら倒れた本数)</p>
                 <div class="grid grid-cols-4 gap-2">
                     <Button
-                        v-for="pin in 12"
-                        :key="pin"
+                        v-for="point in 12"
+                        :key="point"
                         size="lg"
                         variant="outline"
                         class="h-16 text-2xl"
                         :disabled="sending"
-                        @click="record('single', pin)"
+                        @click="record('score', point)"
                     >
-                        {{ pin }}
+                        {{ point }}
                     </Button>
-                </div>
-            </div>
-
-            <!-- 2本以上倒れたとき: 倒れた本数を選ぶ -->
-            <div>
-                <Button
-                    size="lg"
-                    variant="secondary"
-                    class="h-14 w-full text-lg"
-                    :disabled="sending"
-                    @click="showMultiple = !showMultiple"
-                >
-                    2本以上倒れた
-                </Button>
-
-                <div v-if="showMultiple" class="mt-2">
-                    <p class="mb-2 text-sm text-muted-foreground">倒れた本数</p>
-                    <div class="grid grid-cols-4 gap-2">
-                        <Button
-                            v-for="count in 11"
-                            :key="count + 1"
-                            size="lg"
-                            variant="outline"
-                            class="h-14 text-xl"
-                            :disabled="sending"
-                            @click="record('multiple', count + 1)"
-                        >
-                            {{ count + 1 }}本
-                        </Button>
-                    </div>
                 </div>
             </div>
 

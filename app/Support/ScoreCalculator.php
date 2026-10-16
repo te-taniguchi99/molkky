@@ -11,7 +11,7 @@ namespace App\Support;
  * このクラスは、データベースを使わない(配列だけで計算する)ため、単体で動作を確認できる。
  *
  * ルール(公式資料より):
- * - 1本だけ倒れたら、その数字が得点。2本以上倒れたら、倒れた本数が得点
+ * - 1本だけ倒れたら、その数字が得点。2本以上倒れたら、倒れた本数が得点(入力は、得点をそのまま受け取る)
  * - ちょうど目標点(通常 50 点)になったら勝ち
  * - 目標点を超えたら、戻る得点(通常 25 点)に戻る
  * - 連続でミスが上限(通常 3 回)に達したら失格。失格で残りが1つになったら、その1つが勝ち
@@ -22,7 +22,7 @@ class ScoreCalculator
      * 点数と手番を計算する。
      *
      * @param  array<int, int>  $participantIds  投げる順に並べた、参加者の id
-     * @param  array<int, array{participant_id: int, kind: string, value: int}>  $throws  投げた順の記録(kind は single / multiple / miss)
+     * @param  array<int, array{participant_id: int, kind: string, value: int}>  $throws  投げた順の記録(kind は score / miss)
      * @return array{participants: array<int, array{score: int, misses: int, eliminated: bool, throw_count: int}>, current_participant_id: int|null, winner_id: int|null}
      */
     public static function calculate(

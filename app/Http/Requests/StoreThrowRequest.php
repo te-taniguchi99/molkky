@@ -20,10 +20,9 @@ class StoreThrowRequest extends FormRequest
             // 画面に表示されていた、手番の参加者(別の端末で手番が変わっていないかを確かめるため)
             'participant_id' => ['required', 'integer'],
             'kind' => ['required', Rule::enum(ThrowKind::class)],
-            // 1本は番号(1〜12)、2本以上は本数(2〜12)、ミスは値なし
+            // 得点は 1〜12(1本なら倒れた番号、2本以上なら倒れた本数)。ミスは値なし
             'value' => match ($this->input('kind')) {
-                ThrowKind::Single->value => ['required', 'integer', 'between:1,12'],
-                ThrowKind::Multiple->value => ['required', 'integer', 'between:2,12'],
+                ThrowKind::Score->value => ['required', 'integer', 'between:1,12'],
                 default => ['nullable', 'integer'],
             },
         ];
