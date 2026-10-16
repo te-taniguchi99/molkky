@@ -34,12 +34,22 @@ type Candidate = {
     username: string;
 };
 
+type GameParticipant = {
+    name: string;
+    score: number;
+    is_winner: boolean;
+    eliminated: boolean;
+};
+
 type Game = {
     id: number;
     round: number;
     status: string;
     is_bye: boolean;
-    participants: string[];
+    is_finished: boolean;
+    has_throws: boolean;
+    winner_name: string | null;
+    participants: GameParticipant[];
 };
 
 const props = defineProps<{
@@ -253,11 +263,30 @@ defineOptions({
                     <!-- 不戦勝は、入力する点数がないため、移動先なし -->
                     <div v-if="game.is_bye" class="p-3">
                         <p class="text-sm text-muted-foreground">{{ game.round }}回戦 / {{ game.status }}</p>
-                        <p>{{ game.participants[0] }}(不戦勝)</p>
+                        <p>{{ game.participants[0].name }}(不戦勝)</p>
                     </div>
                     <Link v-else :href="`/games/${game.id}`" class="block p-3 transition-colors hover:bg-accent">
                         <p class="text-sm text-muted-foreground">{{ game.round }}回戦 / {{ game.status }}</p>
-                        <p>{{ game.participants.join(' vs ') }}</p>
+
+                        <!-- 点数が入っている試合(進行中・終了)は、各参加者の点数を表示する -->
+                        <ul v-if="game.has_throws" class="mt-1 flex flex-col gap-1">
+                            <li
+                                v-for="participant in game.participants"
+                                :key="participant.name"
+                                class="flex items-baseline justify-between gap-3"
+                                :class="participant.is_winner ? 'font-semibold' : ''"
+                            >
+                                <span class="min-w-0 truncate">
+                                    {{ participant.name }}
+                                    <span v-if="participant.is_winner" class="text-sm text-green-600">(勝ち)</span>
+                                    <span v-if="participant.eliminated" class="text-sm text-destructive">(失格)</span>
+                                </span>
+                                <span class="text-lg tabular-nums">{{ participant.score }}点</span>
+                            </li>
+                        </ul>
+
+                        <!-- まだ点数がない試合は、対戦の組み合わせだけ表示する -->
+                        <p v-else>{{ game.participants.map((participant) => participant.name).join(' vs ') }}</p>
                     </Link>
                 </li>
             </ul>

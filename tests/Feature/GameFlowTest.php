@@ -222,3 +222,22 @@ test('the standings screens can be rendered', function () {
     $this->get(route('standings.index'))->assertOk();
     $this->get(route('standings.show', $tournament))->assertOk();
 });
+
+test('the tournament detail shows the result of finished games', function () {
+    $tournament = startedTournament(TournamentFormat::RoundRobin, 3);
+    $game = $tournament->games()->orderBy('position')->first(); // P1 vs P2
+
+    throwFor($game, 'P1', 'score', 4);
+    throwFor($game, 'P2', 'score', 3);
+    throwFor($game, 'P1', 'score', 6); // 4 + 6 = 10 でちょうど目標点
+
+    $this->get(route('tournaments.show', $tournament))->assertInertia(fn (Assert $page) => $page
+        ->component('tournaments/Show')
+        ->where('games.0.is_finished', true)
+        ->where('games.0.winner_name', 'P1')
+        ->where('games.0.participants.0.score', 10)
+        ->where('games.0.participants.0.is_winner', true)
+        ->where('games.0.participants.1.score', 3)
+        // まだ記録のない試合は、点数を表示しない
+        ->where('games.1.has_throws', false));
+});

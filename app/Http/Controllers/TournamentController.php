@@ -12,6 +12,7 @@ use App\Models\Game;
 use App\Models\Participant;
 use App\Models\Tournament;
 use App\Models\User;
+use App\Support\GameBoard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -96,19 +97,32 @@ class TournamentController extends Controller
             ->get()
             ->map(fn (User $user) => ['id' => $user->id, 'name' => $user->name, 'username' => $user->username]);
 
-        // 試合は、回戦・並び順の順に、出る参加者の名前といっしょに渡す
+        // 試合は、回戦・並び順の順に渡す。点数・勝者は、投擲の記録から計算した結果(GameBoard)を使う
         $games = $tournament->games()
-            ->with('participants')
+            ->with(['tournament', 'participants.members', 'throws'])
             ->orderBy('round')
             ->orderBy('position')
             ->get()
-            ->map(fn (Game $game) => [
-                'id' => $game->id,
-                'round' => $game->round,
-                'status' => $game->status->label(),
-                'is_bye' => $game->is_bye,
-                'participants' => $game->participants->pluck('name')->all(),
-            ]);
+            ->map(function (Game $game) {
+                $board = GameBoard::forGame($game);
+
+                return [
+                    'id' => $game->id,
+                    'round' => $game->round,
+                    'status' => $game->status->label(),
+                    'is_bye' => $game->is_bye,
+                    'is_finished' => $board['is_finished'],
+                    // 記録が1つでもあるか(あれば、点数を表示する)
+                    'has_throws' => $board['has_throws'],
+                    'winner_name' => $board['winner_name'],
+                    'participants' => collect($board['participants'])->map(fn (array $participant) => [
+                        'name' => $participant['name'],
+                        'score' => $participant['score'],
+                        'is_winner' => $participant['is_winner'],
+                        'eliminated' => $participant['eliminated'],
+                    ])->all(),
+                ];
+            });
 
         return Inertia::render('tournaments/Show', [
             'tournament' => [
