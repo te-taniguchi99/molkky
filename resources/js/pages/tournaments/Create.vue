@@ -60,6 +60,18 @@ defineOptions({
             </div>
 
             <div class="grid gap-2">
+                <Label for="held_at">開催日時(未定なら空でも構いません)</Label>
+                <Input id="held_at" name="held_at" type="datetime-local" />
+                <InputError :message="errors.held_at" />
+            </div>
+
+            <div class="grid gap-2">
+                <Label for="venue">場所(未定なら空でも構いません)</Label>
+                <Input id="venue" name="venue" placeholder="例:○○公園 第2広場" />
+                <InputError :message="errors.venue" />
+            </div>
+
+            <div class="grid gap-2">
                 <Label for="format">方式</Label>
                 <select id="format" name="format" :class="selectClass" required>
                     <option v-for="option in formats" :key="option.value" :value="option.value">

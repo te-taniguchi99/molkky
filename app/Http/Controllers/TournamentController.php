@@ -30,6 +30,8 @@ class TournamentController extends Controller
             ->map(fn (Tournament $tournament) => [
                 'id' => $tournament->id,
                 'name' => $tournament->name,
+                'held_at' => $tournament->held_at?->format('Y/m/d H:i'),
+                'venue' => $tournament->venue,
                 'format' => $tournament->format->label(),
                 'participant_type' => $tournament->participant_type->label(),
                 'status' => $tournament->status->label(),
@@ -110,6 +112,8 @@ class TournamentController extends Controller
             'tournament' => [
                 'id' => $tournament->id,
                 'name' => $tournament->name,
+                'held_at' => $tournament->held_at?->format('Y/m/d H:i'),
+                'venue' => $tournament->venue,
                 'format' => $tournament->format->label(),
                 'participant_type' => $tournament->participant_type->label(),
                 'is_team' => $tournament->participant_type === ParticipantType::Team,

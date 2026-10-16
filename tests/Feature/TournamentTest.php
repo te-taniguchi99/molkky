@@ -91,3 +91,38 @@ test('a tournament name must be unique', function () {
 
     expect(Tournament::count())->toBe(1);
 });
+
+test('the date and venue can be set when creating a tournament', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->post(route('tournaments.store'), [
+        'name' => '開催情報つきの大会',
+        'held_at' => '2026-11-03T10:30',
+        'venue' => '○○公園',
+        'format' => TournamentFormat::RoundRobin->value,
+        'participant_type' => ParticipantType::Individual->value,
+        'target_score' => 50,
+        'reset_score' => 25,
+        'max_consecutive_misses' => 3,
+    ])->assertSessionHasNoErrors();
+
+    $tournament = Tournament::firstWhere('name', '開催情報つきの大会');
+
+    expect($tournament->venue)->toBe('○○公園')
+        ->and($tournament->held_at->format('Y-m-d H:i'))->toBe('2026-11-03 10:30');
+});
+
+test('the date and venue can be left empty', function () {
+    $this->actingAs(User::factory()->create());
+
+    $this->post(route('tournaments.store'), [
+        'name' => '日時未定の大会',
+        'format' => TournamentFormat::RoundRobin->value,
+        'participant_type' => ParticipantType::Individual->value,
+        'target_score' => 50,
+        'reset_score' => 25,
+        'max_consecutive_misses' => 3,
+    ])->assertSessionHasNoErrors();
+
+    expect(Tournament::firstWhere('name', '日時未定の大会')->held_at)->toBeNull();
+});

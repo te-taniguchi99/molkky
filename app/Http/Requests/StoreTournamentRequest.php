@@ -20,6 +20,9 @@ class StoreTournamentRequest extends FormRequest
         return [
             // 同じ名前の大会は、作れない
             'name' => ['required', 'string', 'max:255', Rule::unique('tournaments', 'name')],
+            // 開催日時と場所は、決まっていなければ空でもよい
+            'held_at' => ['nullable', 'date'],
+            'venue' => ['nullable', 'string', 'max:255'],
             'format' => ['required', Rule::enum(TournamentFormat::class)],
             'participant_type' => ['required', Rule::enum(ParticipantType::class)],
             'target_score' => ['required', 'integer', 'min:1', 'max:1000'],
@@ -50,6 +53,8 @@ class StoreTournamentRequest extends FormRequest
     {
         return [
             'name' => '大会名',
+            'held_at' => '開催日時',
+            'venue' => '場所',
             'format' => '方式',
             'participant_type' => '参加形態',
             'target_score' => '目標点',

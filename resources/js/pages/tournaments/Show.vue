@@ -12,6 +12,8 @@ import { Spinner } from '@/components/ui/spinner';
 type Tournament = {
     id: number;
     name: string;
+    held_at: string | null;
+    venue: string | null;
     format: string;
     participant_type: string;
     is_team: boolean;
@@ -94,6 +96,10 @@ defineOptions({
 
         <!-- 大会の情報(項目名つきで表示する) -->
         <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+            <dt class="text-muted-foreground">開催日時</dt>
+            <dd>{{ tournament.held_at ?? '未定' }}</dd>
+            <dt class="text-muted-foreground">場所</dt>
+            <dd>{{ tournament.venue ?? '未定' }}</dd>
             <dt class="text-muted-foreground">方式</dt>
             <dd>{{ tournament.format }}</dd>
             <dt class="text-muted-foreground">参加形態</dt>

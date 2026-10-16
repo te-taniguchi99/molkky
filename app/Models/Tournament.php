@@ -17,6 +17,8 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int|null $user_id
  * @property string $name
+ * @property Carbon|null $held_at
+ * @property string|null $venue
  * @property TournamentFormat $format
  * @property ParticipantType $participant_type
  * @property int $target_score
@@ -29,6 +31,8 @@ use Illuminate\Support\Carbon;
 #[Fillable([
     'user_id',
     'name',
+    'held_at',
+    'venue',
     'format',
     'participant_type',
     'target_score',
@@ -53,6 +57,7 @@ class Tournament extends Model
             'format' => TournamentFormat::class,
             'participant_type' => ParticipantType::class,
             'status' => TournamentStatus::class,
+            'held_at' => 'datetime',
         ];
     }
 

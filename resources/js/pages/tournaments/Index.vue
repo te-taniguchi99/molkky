@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 type Tournament = {
     id: number;
     name: string;
+    held_at: string | null;
+    venue: string | null;
     format: string;
     participant_type: string;
     status: string;
@@ -50,6 +52,12 @@ defineOptions({
                     class="block rounded-xl border border-sidebar-border/70 p-4 transition-colors hover:bg-accent dark:border-sidebar-border"
                 >
                     <p class="text-base font-semibold">{{ tournament.name }}</p>
+                    <p
+                        v-if="tournament.held_at || tournament.venue"
+                        class="mt-1 text-sm"
+                    >
+                        {{ [tournament.held_at, tournament.venue].filter(Boolean).join(' / ') }}
+                    </p>
                     <p class="mt-1 text-sm text-muted-foreground">
                         {{ tournament.format }} /
                         {{ tournament.participant_type }} /
